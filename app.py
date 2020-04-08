@@ -133,16 +133,20 @@ def extractMethods(fpath, f):
                 "error": [],
             }
 
-            # Find a line containing `_declspec(naked)`
+            # Find a line containing `_declspec(naked)` or `__declspec(naked)`
             if "_declspec(naked)" not in lineLower:
                 continue
 
+            # Remove _declspec(naked) from the string, and strip spaces.
+            # This allows us to accept `void` being after the declspec
+            lineLower = lineLower.replace("__declspec(naked)", "").replace("_declspec(naked)", "").strip()
+
             if not (lineLower.startswith("static void ") or lineLower.startswith("void ")):
-                eprint("File", fpath, "contains odd line:", line)
+                eprint("File", fpath, "contains odd line (should start with `static void` or `void`):", line)
                 sys.exit(1)
 
             if not lineLower.endswith("()"):
-                eprint("File", fpath, "contains odd line:", line)
+                eprint("File", fpath, "contains odd line (should end with `()`):", line)
                 sys.exit(1)
 
             methodName = line[:-2]
